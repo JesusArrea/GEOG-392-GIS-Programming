@@ -1,3 +1,4 @@
+pip install geopandas
 import os
 import geopandas as gpd
 
@@ -11,11 +12,22 @@ class CensusTract:
         self.geometry = geometry
     
     def calculate_population_density(self):
+        
+        area_sq_meters = self.geometry.area
+        area_sq_kilometers = area_sq_meters / 1000000
+
+        if area_sq_kilometers == 0:
+            population_density = 0.0
+        else:
+            population_density = self.population / area_sq_kilometers
         # calculate the population density based on geometry
         ### >>>>>>>>>>>> YOUR CODE HERE <<<<<<<<<<< ###
         
         return population_density
         ### <<<<<<<<<<< END OF YOUR CODE <<<<<<<<<<< ###
+_+
+
+
 if __name__ == "__main__":
     # read data
     file_path = os.path.join(DATA_DIR, 'data.geojson')
@@ -33,8 +45,17 @@ if __name__ == "__main__":
 
     # calculate the population density for each census tract
 
-    # create a new column for the population density and name it as 'Pop_Den_new'
+    new_densities = gdf.apply(
+        lambda row: CensusTract(
+            geoid=row['GeoId'], 
+            population=row['Pop'], 
+            geometry=row['geometry']
+        ).calculate_population_density(), 
+        axis=1
+    )
 
+    # create a new column for the population density and name it as 'Pop_Den_new'
+gdf['Pop_Den_new'] = new_densities
     ### <<<<<<<<<<< END OF YOUR CODE <<<<<<<<<<< ###
 
     # preview the data again
